@@ -35,3 +35,9 @@ react_tui_smoke.txt
 .DS_Store
 Thumbs.db
 uv.lock
+
+# Finance Harness private data
+/data/private_finance/
+/artifacts/finance/
+/.env.finance
+/configs/finance/local.*
