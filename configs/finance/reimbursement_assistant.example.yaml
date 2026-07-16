@@ -1,0 +1,43 @@
+project:
+  name: reimbursement-assistant
+  package: openharness.finance_harness.reimbursement_assistant
+
+features:
+  text_input: true
+  attachment_input: true
+  image_input: false
+  template_autofill: false
+  harness_evolution: false
+
+references:
+  reimbursement_manual_cost_expense:
+    title: 报账手册（成本费用域）
+    source: null
+
+  centralized_budget_process:
+    title: 集中化预算流程参考
+    source: null
+
+  business_activity_finance_mapping:
+    title: 业务活动—财务映射
+    source: null
+
+  it_business_cashflow_mapping:
+    title: IT公司业务大类与现金流量表项目映射表
+    source: null
+
+  material_requirements:
+    title: 报账材料要求
+    source: null
+
+  material_standard_templates:
+    title: 报账材料标准化模板
+    source: null
+
+  imaging_scan_guide:
+    title: 影像扫描指南
+    source: null
+
+  reimbursement_system_manual:
+    title: 报账系统操作手册
+    source: null

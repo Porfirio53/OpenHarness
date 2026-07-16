@@ -41,3 +41,10 @@ uv.lock
 /artifacts/finance/
 /.env.finance
 /configs/finance/local.*
+
+# Reimbursement Assistant private data
+/data/reimbursement_private/
+/data/reimbursement_documents/
+/artifacts/reimbursement_assistant/
+/configs/finance/reimbursement_assistant.local.yaml
+.env.reimbursement_assistant
