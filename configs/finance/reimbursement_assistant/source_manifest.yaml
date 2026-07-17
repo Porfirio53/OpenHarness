@@ -1,0 +1,73 @@
+schema_version: "1.0"
+manifest_id: reimbursement_assistant_sources
+version: "2026-07-17.day3-5"
+sources:
+  - document_id: reimbursement_assistant_mvp_scope
+    title: 报账助手 MVP 系统边界 ADR-0001
+    version: "2026-07-16"
+    effective_date: null
+    approval_status: approved
+    content_checksum: sha256:ff240ce97102a26fbb237c190b76198d5134c0bbcf209cb3a26bdd3d96a67f41
+    locator_hint: repository://docs/finance/adr/0001-reimbursement-assistant-boundaries.md
+    requires_effective_date: false
+    notes: 首月技术和业务范围基线。
+
+  - document_id: reimbursement_flow_reference
+    title: 报账流程参考
+    version: "2026-07-16"
+    effective_date: null
+    approval_status: approved
+    content_checksum: sha256:bf5c8816ad902d238f870f05b7611ea3a0acca450c676f4e4c259259debf15ef
+    locator_hint: approved-internal-storage://finance/reimbursement-flow
+    requires_effective_date: false
+    notes: 项目流程图，仅用于预算和资金计划前置闸门。
+
+  - document_id: reimbursement_manual_cost_expense
+    title: 报账手册（成本费用域分册）
+    version: 2025V1
+    effective_date: 2025-06-20
+    approval_status: review_required
+    content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+    locator_hint: approved-internal-storage://finance/reimbursement-manual-cost-expense
+    requires_effective_date: true
+    notes: 已定位三个试点场景；仍需财务接口人确认版本和适用单位。
+
+  - document_id: centralized_budget_process
+    title: 集中化预算流程参考
+    version: snapshot-2026-05-27
+    effective_date: null
+    approval_status: review_required
+    content_checksum: sha256:f553be05406969d219e82674529c8194c778fb9c64a98bb26a99f23d5c8b7e0d
+    locator_hint: approved-internal-storage://finance/centralized-budget-process
+    requires_effective_date: true
+    notes: 文件修改日期不能替代制度生效日期，激活前需补充确认。
+
+  - document_id: business_scene_catalog
+    title: 主要业务大类及业务场景对应表
+    version: snapshot-2026-03-24
+    effective_date: null
+    approval_status: review_required
+    content_checksum: sha256:83de2d237d1779af8010acc4f09f3ba7312b1711186bdbc632a9e2f1e9097154
+    locator_hint: approved-internal-storage://finance/business-scene-catalog
+    requires_effective_date: true
+    notes: 激活前需确认当前适用版本和生效时间。
+
+  - document_id: business_activity_finance_mapping
+    title: 数智事业部 业务活动-财务 映射
+    version: snapshot-2026-06-01
+    effective_date: null
+    approval_status: review_required
+    content_checksum: sha256:0b060be7da666be8cdd4d420c4cac0abd5c2ceffc275d40332c5ced474af2679
+    locator_hint: approved-internal-storage://finance/business-activity-mapping
+    requires_effective_date: true
+    notes: 激活前需确认当前适用版本和生效时间。
+
+  - document_id: it_business_cashflow_mapping
+    title: IT公司业务大类与现金流量表项目映射表
+    version: snapshot-2026-06-09
+    effective_date: null
+    approval_status: review_required
+    content_checksum: sha256:04903dca90d8e4b6a7f1238a192bb84354c2030198a5d73a659b313633086f59
+    locator_hint: approved-internal-storage://finance/it-business-cashflow-mapping
+    requires_effective_date: true
+    notes: 激活前需确认当前适用版本和生效时间。

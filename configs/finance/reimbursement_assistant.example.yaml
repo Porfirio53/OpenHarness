@@ -62,6 +62,7 @@ references:
 
 rules:
   active_rule_pack_root: null
-  candidate_rule_pack_root: null
+  candidate_rule_pack_root: configs/finance/reimbursement_assistant/rule_packs
+  source_manifest: configs/finance/reimbursement_assistant/source_manifest.yaml
   require_source_reference: true
   require_human_approval: true

@@ -1,0 +1,260 @@
+schema_version: "1.0"
+rule_pack_id: travel_domestic@2025v1.0-rc1
+scene_id: travel_domestic
+display_name: 国内差旅费报账
+version: 2025v1.0-rc1
+status: review_required
+effective_date: null
+data_classification: internal_derived
+boundary: 员工在常驻地以外的境内公务出差；不含港澳台、境外差旅和商旅平台统一结算单独报账。
+
+classification:
+  aliases: [国内差旅, 境内出差, 差旅费报销, 公务出差]
+  positive_signals: [出差, 机票, 火车票, 住宿费, 市内交通费]
+  exclusion_signals: [出国, 境外, 港澳台, 商旅统结]
+  clarification_questions:
+    - 本次是否为员工在境内常驻地以外执行公务产生的费用？
+    - 本次费用是否由商旅平台统一结算？
+  source_refs:
+    - &manual_scene
+      document_id: reimbursement_manual_cost_expense
+      title: 报账手册（成本费用域分册）
+      document_version: 2025V1
+      effective_date: 2025-06-20
+      section: 国内差旅费报销/业务场景
+      table: TABLE 2
+      row: R0002
+      content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+gates:
+  budget_project:
+    required: true
+    missing_item: budget_project
+    user_message: 当前业务需要先确认可用预算项目；未确认时停止材料齐全判断。
+    source_refs:
+      - &flow_budget
+        document_id: reimbursement_flow_reference
+        title: 报账流程参考
+        document_version: "2026-07-16"
+        effective_date: null
+        section: 预算项目前置闸门
+        locator: 提醒用户：业务场景是否有预算项目
+        content_checksum: sha256:bf5c8816ad902d238f870f05b7611ea3a0acca450c676f4e4c259259debf15ef
+      - &budget_process
+        document_id: centralized_budget_process
+        title: 集中化预算流程参考
+        document_version: snapshot-2026-05-27
+        effective_date: null
+        section: 预算项目建立与确认流程
+        locator: 集中化预算流程参考
+        content_checksum: sha256:f553be05406969d219e82674529c8194c778fb9c64a98bb26a99f23d5c8b7e0d
+  funding_plan:
+    required: true
+    missing_item: funding_plan
+    user_message: 预算项目通过后需要确认资金计划；未确认时停止材料齐全判断。
+    source_refs:
+      - &flow_funding
+        document_id: reimbursement_flow_reference
+        title: 报账流程参考
+        document_version: "2026-07-16"
+        effective_date: null
+        section: 资金计划前置闸门
+        locator: 提醒用户：业务场景是否有资金计划
+        content_checksum: sha256:bf5c8816ad902d238f870f05b7611ea3a0acca450c676f4e4c259259debf15ef
+
+process:
+  form_type: 差旅费报账单（新）
+  paths:
+    - 首页 -> 我要报账 -> 员工费用类报账 -> 差旅费报账单（新）
+    - MOA -> 差旅快速报账 -> 进入
+  summary_template: X（部门）X（员工）报销X月X日-X月X日X事项差旅费
+  source_refs:
+    - document_id: reimbursement_manual_cost_expense
+      title: 报账手册（成本费用域分册）
+      document_version: 2025V1
+      effective_date: 2025-06-20
+      section: 国内差旅费报销/单据路径与摘要
+      table: TABLE 2
+      row: R0003-R0004
+      content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+business_mappings:
+  - business_major: 差旅费
+    business_minor: 生产部门
+    activities: [日常差旅费-生产部门]
+    applies_when: {operator: eq, fact: department_type, value: production}
+    source_refs:
+      - &manual_travel_mapping
+        document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 国内差旅费报销/业务大小类及业务活动
+        table: TABLE 3
+        row: R0002-R0005
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+  - business_major: 差旅费
+    business_minor: 管理部门
+    activities: [日常差旅费-管理部门]
+    applies_when: {operator: eq, fact: department_type, value: management}
+    source_refs: [*manual_travel_mapping]
+  - business_major: 差旅费
+    business_minor: 营销部门
+    activities: [日常差旅费-营销部门-营业厅, 日常差旅费-营销部门-其他]
+    applies_when: {operator: eq, fact: department_type, value: marketing}
+    source_refs: [*manual_travel_mapping]
+  - business_major: 差旅费
+    business_minor: 研发差旅费
+    activities: [研究开发-差旅费]
+    applies_when: {operator: eq, fact: department_type, value: research}
+    source_refs: [*manual_travel_mapping]
+
+rules:
+  - rule_id: travel.application.offline.required
+    category: attachment
+    description: 线下差旅申请必须提供差旅事前审批单。
+    applies_when: {operator: eq, fact: platform_application, value: false}
+    required_items: [travel_application]
+    severity: blocking
+    user_message: 请补充已审批的线下差旅事前审批单。
+    conflict_key: travel_application_requirement
+    source_refs:
+      - &manual_travel_materials
+        document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 国内差旅费报销/报账材料要求
+        table: TABLE 4
+        row: R0003
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: travel.invoice.non_centralized.required
+    category: attachment
+    description: 非商旅统结费用需要提供对应发票。
+    applies_when: {operator: eq, fact: centralized_settlement, value: false}
+    required_items: [invoice]
+    severity: blocking
+    user_message: 请按票据形态补充非商旅统结发票。
+    conflict_key: travel_invoice_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 国内差旅费报销/报账材料要求
+        table: TABLE 4
+        row: R0004
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: travel.taxi.itinerary.required
+    category: attachment
+    description: 第三方平台打车且发票未注明行程时需要电子行程单。
+    applies_when:
+      operator: all
+      operands:
+        - {operator: eq, fact: third_party_taxi, value: true}
+        - {operator: eq, fact: invoice_has_route_note, value: false}
+    required_items: [taxi_itinerary]
+    severity: blocking
+    user_message: 发票未注明行程起止地点和日期，请补充平台电子行程单。
+    conflict_key: taxi_itinerary_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 国内差旅费报销/报账材料要求
+        table: TABLE 4
+        row: R0005
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: travel.hotel.non_centralized.details.required
+    category: attachment
+    description: 非商旅平台统结酒店费用需要账单明细和支付凭证。
+    applies_when: {operator: eq, fact: hotel_non_centralized, value: true}
+    required_items: [hotel_statement, payment_evidence]
+    severity: blocking
+    user_message: 请补充酒店账单明细及对应支付凭证。
+    conflict_key: hotel_non_centralized_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 国内差旅费报销/报账材料要求
+        table: TABLE 4
+        row: R0006
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: travel.itinerary.change.explanation.required
+    category: attachment
+    description: 实际行程与申请不一致时需要经审批的情况说明。
+    applies_when: {operator: eq, fact: itinerary_matches_application, value: false}
+    required_items: [approved_special_explanation]
+    severity: blocking
+    user_message: 实际行程与申请不一致，请补充原因、处理方式和审批意见。
+    conflict_key: travel_itinerary_change_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 国内差旅费报销/报账材料要求
+        table: TABLE 4
+        row: R0007
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: travel.private.detour.comparison.required
+    category: attachment
+    description: 因私绕道需要直达票价比对和结果说明。
+    applies_when: {operator: eq, fact: private_detour, value: true}
+    required_items: [direct_fare_comparison, detour_explanation]
+    severity: blocking
+    user_message: 请提供直达票价截图，并说明绕道行程及比对结果。
+    conflict_key: private_detour_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 国内差旅费报销/其他材料
+        table: TABLE 4
+        row: R0008
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: travel.cross_period.approval.required
+    category: attachment
+    description: 跨期或跨年报账需要相应审批说明。
+    applies_when: {operator: eq, fact: cross_period_claim, value: true}
+    required_items: [approved_cross_period_explanation]
+    severity: review
+    user_message: 当前属于跨期报账，请补充符合审批层级的跨期说明。
+    conflict_key: travel_cross_period_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 国内差旅费报销/报账注意事项
+        table: TABLE 5
+        row: R0009
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: travel.invoice.lines.consistent
+    category: consistency
+    description: 非统结发票行金额应与对应费用行合计保持一致。
+    applies_when: {operator: eq, fact: invoice_line_amounts_consistent, value: false}
+    required_items: [amount_difference_resolution]
+    severity: review
+    user_message: 发票行与费用行金额不一致，请核对并说明或修正差异。
+    conflict_key: travel_invoice_line_consistency
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 国内差旅费报销/报账注意事项
+        table: TABLE 5
+        row: R0008
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6

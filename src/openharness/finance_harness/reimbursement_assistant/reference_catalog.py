@@ -11,6 +11,7 @@ class ReferenceDocumentKey(str, Enum):
     REIMBURSEMENT_MANUAL_COST_EXPENSE = "reimbursement_manual_cost_expense"
     CENTRALIZED_BUDGET_PROCESS = "centralized_budget_process"
     BUDGET_YEAR_END_FAQ = "budget_year_end_faq"
+    BUSINESS_SCENE_CATALOG = "business_scene_catalog"
     BUSINESS_ACTIVITY_FINANCE_MAPPING = "business_activity_finance_mapping"
     IT_BUSINESS_CASHFLOW_MAPPING = "it_business_cashflow_mapping"
     MATERIAL_REQUIREMENTS = "material_requirements"

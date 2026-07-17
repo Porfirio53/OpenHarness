@@ -1,0 +1,309 @@
+schema_version: "1.0"
+rule_pack_id: it_maintenance_support@2025v1.0-rc1
+scene_id: it_maintenance_support
+display_name: IT维护支撑费正式报账
+version: 2025v1.0-rc1
+status: review_required
+effective_date: null
+data_classification: internal_derived
+boundary: B域、M域、O域、IT云及其他IT维护支撑费的综合类费用批量正式报账；不含计提和冲销。
+
+classification:
+  aliases: [IT维护支撑费, 系统维护费, IT维保费, IT系统支撑费]
+  positive_signals: [B域, M域, O域, IT云, 系统维护, 维保, 技术支撑]
+  exclusion_signals: [计提, 冲销, 软件开发资本化, 业务平台运营结算]
+  clarification_questions:
+    - 本次属于正式报账、计提还是冲销？
+    - 涉及的系统属于B域、M域、O域、IT云还是其他IT维护支撑？
+  source_refs:
+    - &manual_scene
+      document_id: reimbursement_manual_cost_expense
+      title: 报账手册（成本费用域分册）
+      document_version: 2025V1
+      effective_date: 2025-06-20
+      section: IT维护支撑费/业务场景
+      table: TABLE 42
+      row: R0002
+      content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+    - &manual_domain_definitions
+      document_id: reimbursement_manual_cost_expense
+      title: 报账手册（成本费用域分册）
+      document_version: 2025V1
+      effective_date: 2025-06-20
+      section: IT维护支撑费/域别判断
+      table: TABLE 45
+      row: R0002
+      content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+gates:
+  budget_project:
+    required: true
+    missing_item: budget_project
+    user_message: 当前IT维护业务需要先确认可用预算项目；未确认时停止材料齐全判断。
+    source_refs:
+      - &flow_budget
+        document_id: reimbursement_flow_reference
+        title: 报账流程参考
+        document_version: "2026-07-16"
+        effective_date: null
+        section: 预算项目前置闸门
+        locator: 提醒用户：业务场景是否有预算项目
+        content_checksum: sha256:bf5c8816ad902d238f870f05b7611ea3a0acca450c676f4e4c259259debf15ef
+      - &budget_process
+        document_id: centralized_budget_process
+        title: 集中化预算流程参考
+        document_version: snapshot-2026-05-27
+        effective_date: null
+        section: 预算项目建立与确认流程
+        locator: 集中化预算流程参考
+        content_checksum: sha256:f553be05406969d219e82674529c8194c778fb9c64a98bb26a99f23d5c8b7e0d
+  funding_plan:
+    required: true
+    missing_item: funding_plan
+    user_message: 预算项目通过后需要确认资金计划；未确认时停止材料齐全判断。
+    source_refs:
+      - &flow_funding
+        document_id: reimbursement_flow_reference
+        title: 报账流程参考
+        document_version: "2026-07-16"
+        effective_date: null
+        section: 资金计划前置闸门
+        locator: 提醒用户：业务场景是否有资金计划
+        content_checksum: sha256:bf5c8816ad902d238f870f05b7611ea3a0acca450c676f4e4c259259debf15ef
+
+process:
+  form_type: 综合类费用批量报账单
+  paths:
+    - 首页 -> 我要报账 -> 网络费用类报账 -> 综合类费用批量报账单
+  summary_template: X（部门）X（员工）报销X项目X合同X年X月-X年X月/X年X季度维护支撑费
+  source_refs:
+    - document_id: reimbursement_manual_cost_expense
+      title: 报账手册（成本费用域分册）
+      document_version: 2025V1
+      effective_date: 2025-06-20
+      section: IT维护支撑费/单据路径与摘要
+      table: TABLE 42
+      row: R0003-R0004
+      content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+business_mappings:
+  - business_major: IT维护支撑费
+    business_minor: B域IT系统
+    activities:
+      - B域IT系统-大数据系统
+      - B域IT系统-智慧中台
+      - B域IT系统-运营管理系统
+      - B域IT系统-其他业务支撑系统
+    applies_when: {operator: eq, fact: it_domain, value: B}
+    source_refs:
+      - &manual_it_mapping
+        document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: IT维护支撑费/业务大小类及业务活动
+        table: TABLE 43
+        row: R0002-R0007
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+      - &it_cashflow_mapping
+        document_id: it_business_cashflow_mapping
+        title: IT公司业务大类与现金流量表项目映射表
+        document_version: snapshot-2026-06-09
+        effective_date: null
+        section: IT维护支撑费现金流映射
+        table: Sheet1
+        row: R0185
+        content_checksum: sha256:04903dca90d8e4b6a7f1238a192bb84354c2030198a5d73a659b313633086f59
+  - business_major: IT维护支撑费
+    business_minor: M域IT系统
+    activities:
+      - M域IT系统-财务管理类系统
+      - M域IT系统-其他专业管理系统
+      - M域IT系统-OA类系统
+      - M域IT系统-风险控制类系统
+    applies_when: {operator: eq, fact: it_domain, value: M}
+    source_refs: [*manual_it_mapping, *it_cashflow_mapping]
+  - business_major: IT维护支撑费
+    business_minor: O域IT系统
+    activities:
+      - O域IT系统-业务编排类系统
+      - O域IT系统-资源管理类系统
+      - O域IT系统-运维管理类系统
+      - O域IT系统-通用技术平台
+    applies_when: {operator: eq, fact: it_domain, value: O}
+    source_refs: [*manual_it_mapping, *it_cashflow_mapping]
+  - business_major: IT维护支撑费
+    business_minor: 私有云资源池
+    activities: [IT云, 私有云资源池-网络信息安全, 私有云资源池-其他公益性业务]
+    applies_when: {operator: eq, fact: it_domain, value: IT_CLOUD}
+    source_refs: [*manual_it_mapping, *it_cashflow_mapping]
+  - business_major: IT维护支撑费
+    business_minor: 其他IT维护支撑
+    activities: [其他IT维护支撑]
+    applies_when: {operator: eq, fact: it_domain, value: OTHER}
+    source_refs: [*manual_it_mapping, *it_cashflow_mapping]
+
+rules:
+  - rule_id: it.reporting.mode.formal.only
+    category: classification
+    description: 首月规则包仅支持正式报账，计提和冲销需要转未覆盖流程。
+    applies_when: {operator: in, fact: reporting_mode, value: [accrual, reversal]}
+    required_items: [formal_reporting_mode]
+    severity: blocking
+    user_message: 当前MVP只支持正式报账，计提或冲销请转人工或后续规则包。
+    conflict_key: it_reporting_mode_scope
+    source_refs:
+      - document_id: reimbursement_assistant_mvp_scope
+        title: 报账助手 MVP 系统边界 ADR-0001
+        document_version: "2026-07-16"
+        effective_date: null
+        section: 决策
+        locator: 首月MVP三个场景边界
+        content_checksum: sha256:ff240ce97102a26fbb237c190b76198d5134c0bbcf209cb3a26bdd3d96a67f41
+
+  - rule_id: it.domain.clarification.required
+    category: classification
+    description: 未确认IT域别时需要澄清B、M、O、IT云或其他维护支撑。
+    applies_when: {operator: exists, fact: it_domain, value: false}
+    required_items: [it_domain_clarification]
+    severity: review
+    user_message: 请确认相关系统属于B域、M域、O域、IT云或其他IT维护支撑。
+    conflict_key: it_domain_classification
+    source_refs: [*manual_domain_definitions]
+
+  - rule_id: it.invoice.required
+    category: attachment
+    description: IT维护支撑费正式报账需要发票。
+    applies_when: {operator: eq, fact: reporting_mode, value: formal}
+    required_items: [invoice]
+    severity: blocking
+    user_message: 请按票据形态补充IT维护支撑费发票。
+    conflict_key: it_invoice_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: IT维护支撑费/报账材料要求
+        table: TABLE 44
+        row: R0003
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: it.contract.order.required
+    category: attachment
+    description: IT维护支撑费正式报账需要关联或提供合同及采购订单。
+    applies_when: {operator: eq, fact: reporting_mode, value: formal}
+    required_items: [contract_or_order]
+    severity: blocking
+    user_message: 请关联或补充合同及采购订单。
+    conflict_key: it_contract_order_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: IT维护支撑费/报账材料要求
+        table: TABLE 44
+        row: R0004
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: it.signed.settlement.required
+    category: attachment
+    description: IT维护支撑费正式报账需要双方签字或盖章的结算单。
+    applies_when: {operator: eq, fact: reporting_mode, value: formal}
+    required_items: [signed_settlement]
+    severity: blocking
+    user_message: 请补充双方签字或盖章的费用结算单。
+    conflict_key: it_signed_settlement_requirement
+    source_refs:
+      - &manual_settlement
+        document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: IT维护支撑费/报账材料要求
+        table: TABLE 44
+        row: R0005
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: it.contract.evidence.conditional
+    category: attachment
+    description: 合同付款条款约定的验收、考核、请款等材料需要随单提供。
+    applies_when: {operator: eq, fact: contract_additional_evidence_required, value: true}
+    required_items: [contract_evidence]
+    severity: blocking
+    user_message: 请按合同付款条款补充验收、考核、请款或其他约定材料。
+    conflict_key: it_contract_evidence_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: IT维护支撑费/报账材料要求
+        table: TABLE 44
+        row: R0006
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: it.settlement.information.complete
+    category: field
+    description: 结算单需要包含合同订单标识、服务内容、数量、单价和金额等信息。
+    applies_when: {operator: eq, fact: settlement_information_complete, value: false}
+    required_items: [settlement_calculation_details]
+    severity: blocking
+    user_message: 结算单关键信息不完整，请补充详细计算明细和过程。
+    conflict_key: it_settlement_information
+    source_refs: [*manual_settlement]
+
+  - rule_id: it.order.contract.consistent
+    category: consistency
+    description: 采购订单和结算单的服务内容、单价应与合同价格清单一致。
+    applies_when: {operator: eq, fact: order_contract_terms_consistent, value: false}
+    required_items: [contract_order_correction]
+    severity: blocking
+    user_message: 合同、采购订单或结算单的服务内容和单价不一致，请修正或补充依据。
+    conflict_key: it_order_contract_consistency
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: IT维护支撑费/报账注意事项
+        table: TABLE 45
+        row: R0003-R0005
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: it.amounts.consistent
+    category: consistency
+    description: 报账、发票、付款及支撑材料金额原则上应保持一致。
+    applies_when: {operator: eq, fact: amounts_consistent, value: false}
+    required_items: [amount_difference_resolution]
+    severity: review
+    user_message: 金额存在差异，请按差异类型修正材料或补充经审批说明。
+    conflict_key: it_amount_consistency
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: IT维护支撑费/报账注意事项
+        table: TABLE 45
+        row: R0007
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: it.payment.account.consistent
+    category: consistency
+    description: 收款账号原则上应与合同约定结算账号一致。
+    applies_when: {operator: eq, fact: contract_account_matches, value: false}
+    required_items: [account_change_evidence]
+    severity: review
+    user_message: 收款账号与合同不一致，请补充合同约定的变更材料或盖章付款说明。
+    conflict_key: it_payment_account_consistency
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: IT维护支撑费/报账注意事项
+        table: TABLE 45
+        row: R0008
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6

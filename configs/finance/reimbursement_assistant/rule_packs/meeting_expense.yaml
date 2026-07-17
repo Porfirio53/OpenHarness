@@ -1,0 +1,300 @@
+schema_version: "1.0"
+rule_pack_id: meeting_expense@2025v1.0-rc1
+scene_id: meeting_expense
+display_name: 会议费报账
+version: 2025v1.0-rc1
+status: review_required
+effective_date: null
+data_classification: internal_derived
+boundary: 公司因生产经营活动召开会议产生的费用；参加外部单位会议适用明确的材料例外。
+
+classification:
+  aliases: [会议费, 会议报销, 会议支出, 外部会议注册]
+  positive_signals: [会议通知, 签到表, 会场, 会议室, 会议酒店]
+  exclusion_signals: [培训费, 业务招待费, 团建, 旅游]
+  clarification_questions:
+    - 本次是公司组织会议，还是参加外部单位组织的会议？
+    - 是否发生住宿、餐饮、场地或设备租赁费用？
+  source_refs:
+    - &manual_scene
+      document_id: reimbursement_manual_cost_expense
+      title: 报账手册（成本费用域分册）
+      document_version: 2025V1
+      effective_date: 2025-06-20
+      section: 会议费/核算场景
+      table: TABLE 26
+      row: R0002
+      content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+gates:
+  budget_project:
+    required: true
+    missing_item: budget_project
+    user_message: 当前会议业务需要先确认可用预算项目；未确认时停止材料齐全判断。
+    source_refs:
+      - &flow_budget
+        document_id: reimbursement_flow_reference
+        title: 报账流程参考
+        document_version: "2026-07-16"
+        effective_date: null
+        section: 预算项目前置闸门
+        locator: 提醒用户：业务场景是否有预算项目
+        content_checksum: sha256:bf5c8816ad902d238f870f05b7611ea3a0acca450c676f4e4c259259debf15ef
+      - &budget_process
+        document_id: centralized_budget_process
+        title: 集中化预算流程参考
+        document_version: snapshot-2026-05-27
+        effective_date: null
+        section: 预算项目建立与确认流程
+        locator: 集中化预算流程参考
+        content_checksum: sha256:f553be05406969d219e82674529c8194c778fb9c64a98bb26a99f23d5c8b7e0d
+  funding_plan:
+    required: true
+    missing_item: funding_plan
+    user_message: 预算项目通过后需要确认资金计划；未确认时停止材料齐全判断。
+    source_refs:
+      - &flow_funding
+        document_id: reimbursement_flow_reference
+        title: 报账流程参考
+        document_version: "2026-07-16"
+        effective_date: null
+        section: 资金计划前置闸门
+        locator: 提醒用户：业务场景是否有资金计划
+        content_checksum: sha256:bf5c8816ad902d238f870f05b7611ea3a0acca450c676f4e4c259259debf15ef
+
+process:
+  form_type: 会议费报账单（有标准控制）
+  paths:
+    - 首页 -> 我要报账 -> 综合费用类报账 -> 会议费报账单（有标准控制）
+    - MOA -> 会议报销
+  summary_template: X部门X员工报销X项目会议费
+  source_refs:
+    - document_id: reimbursement_manual_cost_expense
+      title: 报账手册（成本费用域分册）
+      document_version: 2025V1
+      effective_date: 2025-06-20
+      section: 会议费/单据路径与摘要
+      table: TABLE 26
+      row: R0003-R0004
+      content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+business_mappings:
+  - business_major: 会议费
+    business_minor: 会议费
+    activities: [会议费]
+    applies_when: {operator: eq, fact: research_related, value: false}
+    source_refs:
+      - &manual_meeting_mapping
+        document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/业务大小类及业务活动
+        table: TABLE 27
+        row: R0002
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+      - &finance_meeting_mapping
+        document_id: business_activity_finance_mapping
+        title: 数智事业部 业务活动-财务 映射
+        document_version: snapshot-2026-06-01
+        effective_date: null
+        section: 业务活动映射
+        table: 主表
+        row: R0003-R0004
+        content_checksum: sha256:0b060be7da666be8cdd4d420c4cac0abd5c2ceffc275d40332c5ced474af2679
+  - business_major: 研究开发费
+    business_minor: 研发会议费
+    activities: [研究开发-会议费]
+    applies_when: {operator: eq, fact: research_related, value: true}
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/业务大小类及业务活动
+        table: TABLE 27
+        row: R0003
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+rules:
+  - rule_id: meeting.invoice.required
+    category: attachment
+    description: 会议费报账需要提供与业务类型相符的发票。
+    applies_when: null
+    required_items: [invoice]
+    severity: blocking
+    user_message: 请按票据形态补充会议费用发票。
+    conflict_key: meeting_invoice_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/报账材料要求
+        table: TABLE 28
+        row: R0003
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: meeting.contract.order.conditional
+    category: attachment
+    description: 存在合同时需要关联或提供合同及采购订单。
+    applies_when: {operator: eq, fact: has_contract, value: true}
+    required_items: [contract_or_order]
+    severity: blocking
+    user_message: 当前会议事项存在合同，请关联或补充合同及采购订单。
+    conflict_key: meeting_contract_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/报账材料要求
+        table: TABLE 28
+        row: R0004
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: meeting.notice.required
+    category: attachment
+    description: 会议费报账需要会议通知，内容应与申请保持一致。
+    applies_when: null
+    required_items: [meeting_notice]
+    severity: blocking
+    user_message: 请补充与会议申请内容一致的会议通知。
+    conflict_key: meeting_notice_requirement
+    source_refs:
+      - &manual_meeting_preapproval
+        document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/报账材料要求
+        table: TABLE 28
+        row: R0005
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: meeting.internal.preapproval.required
+    category: attachment
+    description: 公司组织的会议需要关联会议费事前申请单。
+    applies_when: {operator: eq, fact: external_meeting, value: false}
+    required_items: [meeting_preapproval]
+    severity: blocking
+    user_message: 公司组织会议请关联会议费事前申请单。
+    conflict_key: meeting_preapproval_requirement
+    source_refs: [*manual_meeting_preapproval]
+
+  - rule_id: meeting.internal.attendance.required
+    category: attachment
+    description: 公司组织的会议需要提供可核对日期和人数的签到记录。
+    applies_when: {operator: eq, fact: external_meeting, value: false}
+    required_items: [attendance_sheet]
+    severity: blocking
+    user_message: 请补充能够展示参会日期和人数的签到记录。
+    conflict_key: meeting_attendance_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/报账材料要求
+        table: TABLE 28
+        row: R0006
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: meeting.hotel.list.required
+    category: attachment
+    description: 公司组织会议发生酒店费用时需要酒店有效公章费用清单。
+    applies_when:
+      operator: all
+      operands:
+        - {operator: eq, fact: external_meeting, value: false}
+        - {operator: eq, fact: hotel_expense_incurred, value: true}
+    required_items: [stamped_hotel_expense_list]
+    severity: blocking
+    user_message: 请补充加盖酒店有效公章的费用清单。
+    conflict_key: meeting_hotel_list_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/报账材料要求
+        table: TABLE 28
+        row: R0007
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: meeting.personal.advance.payment.required
+    category: attachment
+    description: 个人垫付金额超过5000元时需要支付记录。
+    applies_when: {operator: gt, fact: personal_advance_amount, value: 5000}
+    required_items: [payment_evidence]
+    severity: blocking
+    user_message: 个人垫付金额超过5000元，请补充支付记录。
+    conflict_key: meeting_personal_advance_requirement
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/报账材料要求
+        table: TABLE 28
+        row: R0008
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: meeting.headcount.difference.explanation
+    category: consistency
+    description: 酒店清单人数与参会人数不一致时需要差异原因。
+    applies_when: {operator: eq, fact: headcount_matches, value: false}
+    required_items: [headcount_difference_explanation]
+    severity: review
+    user_message: 酒店清单人数与参会人数不一致，请说明差异原因。
+    conflict_key: meeting_headcount_consistency
+    source_refs:
+      - &manual_external_exception
+        document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/报账注意事项
+        table: TABLE 29
+        row: R0006
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: meeting.external.material.exception
+    category: classification
+    description: 参加外部单位组织会议时无需本公司签到表和酒店费用清单。
+    applies_when: {operator: eq, fact: external_meeting, value: true}
+    required_items: [external_meeting_confirmation]
+    severity: warning
+    user_message: 已按外部会议例外处理，请保留能够证明会议主办方的通知。
+    conflict_key: meeting_external_exception
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/报账注意事项
+        table: TABLE 29
+        row: R0007
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
+
+  - rule_id: meeting.invoice.tax.items.split
+    category: consistency
+    description: 多种服务应按服务类型分别或分行分税目开票。
+    applies_when:
+      operator: all
+      operands:
+        - {operator: eq, fact: multiple_service_types, value: true}
+        - {operator: eq, fact: invoice_tax_items_split, value: false}
+    required_items: [corrected_invoice_or_approved_explanation]
+    severity: review
+    user_message: 当前发票包含多类服务，请核对分行分税目要求并转财务复核。
+    conflict_key: meeting_invoice_tax_consistency
+    source_refs:
+      - document_id: reimbursement_manual_cost_expense
+        title: 报账手册（成本费用域分册）
+        document_version: 2025V1
+        effective_date: 2025-06-20
+        section: 会议费/报账注意事项
+        table: TABLE 29
+        row: R0008
+        content_checksum: sha256:88a697b64cf563a5f4e4e6f67b22e7179bdd6d6d86e4c1406dc96b57046430b6
