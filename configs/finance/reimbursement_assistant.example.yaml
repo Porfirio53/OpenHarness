@@ -2,42 +2,66 @@ project:
   name: reimbursement-assistant
   package: openharness.finance_harness.reimbursement_assistant
 
+mvp:
+  supported_scenes:
+    - travel_domestic
+    - meeting_expense
+    - it_maintenance_support
+  classification_confidence_threshold: 0.80
+
 features:
   text_input: true
   attachment_input: true
+  attachment_metadata_input: true
+  extracted_text_input: true
   image_input: false
   template_autofill: false
   harness_evolution: false
+  automatic_rule_activation: false
+
+safety:
+  unsupported_scene_action: stop_and_feedback
+  low_confidence_action: ask_user
+  unreadable_evidence_action: ask_user
+  source_conflict_action: human_review
+  log_original_business_content: false
 
 references:
   reimbursement_manual_cost_expense:
-    title: 报账手册（成本费用域）
+    title: 报账手册（成本费用域分册）
+    version: 2025V1
     source: null
-
   centralized_budget_process:
     title: 集中化预算流程参考
+    version: null
     source: null
-
   business_activity_finance_mapping:
     title: 业务活动—财务映射
+    version: null
     source: null
-
   it_business_cashflow_mapping:
     title: IT公司业务大类与现金流量表项目映射表
+    version: null
     source: null
-
   material_requirements:
     title: 报账材料要求
+    version: null
     source: null
-
   material_standard_templates:
     title: 报账材料标准化模板
+    version: null
     source: null
-
   imaging_scan_guide:
     title: 影像扫描指南
+    version: null
     source: null
-
   reimbursement_system_manual:
     title: 报账系统操作手册
+    version: "2023"
     source: null
+
+rules:
+  active_rule_pack_root: null
+  candidate_rule_pack_root: null
+  require_source_reference: true
+  require_human_approval: true

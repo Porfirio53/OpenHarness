@@ -48,3 +48,10 @@ uv.lock
 /artifacts/reimbursement_assistant/
 /configs/finance/reimbursement_assistant.local.yaml
 .env.reimbursement_assistant
+
+# Finance data (only synthetic fixtures belong in Git)
+configs/finance/*.local.yaml
+data/private_finance/
+data/finance_documents/
+data/reimbursement_uploads/
+logs/finance/
